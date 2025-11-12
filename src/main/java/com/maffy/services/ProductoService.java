@@ -1,6 +1,6 @@
 package com.maffy.services;
 
-import com.maffy.database.SupabaseConnection;
+import com.maffy.database.Conexion;
 import com.maffy.models.Producto;
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ public class ProductoService {
         List<Producto> productos = new ArrayList<>();
         String sql = "SELECT * FROM productos ORDER BY id";
         
-        try (Connection conn = SupabaseConnection.getConnection();
+        try (Connection conn = Conexion.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             
@@ -36,7 +36,7 @@ public class ProductoService {
     public boolean agregarProducto(Producto producto) {
         String sql = "INSERT INTO productos (nombre, descripcion, precio, stock, categoria) VALUES (?, ?, ?, ?, ?)";
         
-        try (Connection conn = SupabaseConnection.getConnection();
+        try (Connection conn = Conexion.conectar();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, producto.getNombre());
