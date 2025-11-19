@@ -1,11 +1,14 @@
 D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\models\Producto.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\Vista\PanelProducto.java
+D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\Dao\ProductoDAO.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\Vista\PanelCliente.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\Vista\PanelInicio.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\Main.java
+D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\controllers\ClienteController.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\services\ProductoService.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\database\Conexion.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\models\Cliente.java
+D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\Dao\ClienteDAO.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\Vista\FrmUsuario.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\com\maffy\models\Venta.java
 D:\ProyMaffy\EquipoMaffy\src\main\java\Vista\FrmMenu.java
