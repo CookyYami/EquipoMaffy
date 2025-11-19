@@ -1,0 +1,31 @@
+=== LOG INICIADO ===
+[2025-11-19 01:30:49.485] INFO - === INICIO DE PANELPEDIDO ===
+[2025-11-19 01:30:49.494] DEBUG - Testando obtenerTodosPedidos() directamente...
+[2025-11-19 01:30:49.499] DEBUG - obtenerTodosPedidos() iniciando...
+[2025-11-19 01:30:54.100] INFO - Tabla de pedidos detectada: pedido
+[2025-11-19 01:30:54.108] DEBUG - SQL: SELECT id_pedido, fecha, estado, id_cliente, id_usuario, total FROM pedido ORDER BY id_pedido DESC
+[2025-11-19 01:30:54.307] INFO - 6 pedidos cargados desde tabla pedido
+[2025-11-19 01:30:54.623] INFO - obtenerTodosPedidos() devolvió: 6 pedidos
+[2025-11-19 01:30:54.626] DEBUG -   - Pedido id=6, fecha=2025-11-19, estado=PENDIENTE
+[2025-11-19 01:30:54.626] DEBUG -   - Pedido id=5, fecha=2025-11-19, estado=PENDIENTE
+[2025-11-19 01:30:54.628] DEBUG -   - Pedido id=4, fecha=2025-11-19, estado=PENDIENTE
+[2025-11-19 01:30:54.628] DEBUG -   - Pedido id=3, fecha=2025-11-19, estado=PENDIENTE
+[2025-11-19 01:30:54.628] DEBUG -   - Pedido id=2, fecha=2025-11-02, estado=Pendiente
+[2025-11-19 01:30:54.628] DEBUG -   - Pedido id=1, fecha=2025-11-02, estado=Entregado
+[2025-11-19 01:30:54.630] DEBUG - Llamando cargarCombos()...
+[2025-11-19 01:30:58.694] DEBUG - Llamando cargarTablaPedidos()...
+[2025-11-19 01:30:58.694] DEBUG - cargarTablaPedidos() iniciando...
+[2025-11-19 01:30:58.694] DEBUG - obtenerTodosPedidos() iniciando...
+[2025-11-19 01:31:00.204] INFO - Tabla de pedidos detectada: pedido
+[2025-11-19 01:31:00.206] DEBUG - SQL: SELECT id_pedido, fecha, estado, id_cliente, id_usuario, total FROM pedido ORDER BY id_pedido DESC
+[2025-11-19 01:31:00.330] INFO - 6 pedidos cargados desde tabla pedido
+[2025-11-19 01:31:00.473] DEBUG - Se obtuvieron 6 pedidos de la base de datos
+[2025-11-19 01:31:00.479] DEBUG - Añadiendo pedido: id=6, fecha=2025-11-19, estado=PENDIENTE, total=18.00
+[2025-11-19 01:31:00.479] DEBUG - Añadiendo pedido: id=5, fecha=2025-11-19, estado=PENDIENTE, total=5.50
+[2025-11-19 01:31:00.479] DEBUG - Añadiendo pedido: id=4, fecha=2025-11-19, estado=PENDIENTE, total=16.50
+[2025-11-19 01:31:00.479] DEBUG - Añadiendo pedido: id=3, fecha=2025-11-19, estado=PENDIENTE, total=71.00
+[2025-11-19 01:31:00.481] DEBUG - Añadiendo pedido: id=2, fecha=2025-11-02, estado=Pendiente, total=11.50
+[2025-11-19 01:31:00.481] DEBUG - Añadiendo pedido: id=1, fecha=2025-11-02, estado=Entregado, total=71.00
+[2025-11-19 01:31:00.481] INFO - Tabla de pedidos cargada con 6 filas
+[2025-11-19 01:31:00.481] DEBUG - Asignando listeners...
+[2025-11-19 01:31:00.483] INFO - === FIN INICIALIZACION PANELPEDIDO ===
