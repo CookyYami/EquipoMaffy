@@ -14,6 +14,8 @@ import com.maffy.models.Producto;
 import com.maffy.models.Cliente;
 import com.maffy.utils.Logger;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -55,6 +57,25 @@ public class PanelPedido extends javax.swing.JPanel {
         Logger.debug("Asignando listeners...");
         jButton1.addActionListener(evt -> guardarPedido());
         jComboBox2.addActionListener(evt -> mostrarProductoSeleccionado());
+        // listeners para Limpiar, Editar y Eliminar
+        jButton2.addActionListener(evt -> limpiarCampos());
+        jButton3.addActionListener(evt -> editarPedido());
+        jButton4.addActionListener(evt -> eliminarPedido());
+
+        // selección en la tabla para cargar pedido en campos
+        jTable1.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                cargarPedidoSeleccionado();
+            }
+        });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 1) {
+                    cargarPedidoSeleccionado();
+                }
+            }
+        });
         Logger.info("=== FIN INICIALIZACION PANELPEDIDO ===");
     }
 
@@ -411,6 +432,189 @@ public class PanelPedido extends javax.swing.JPanel {
             Logger.exception("Excepción en cargarTablaPedidos", ex);
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error al cargar tabla de pedidos: " + ex.getMessage());
+        }
+    }
+
+    private void limpiarCampos() {
+        jTextField1.setText("");
+        jTextField2.setText("");
+        jTextField3.setText("");
+        jTextField4.setText("");
+        jTable1.clearSelection();
+    }
+
+    private void cargarPedidoSeleccionado() {
+        try {
+            int fila = jTable1.getSelectedRow();
+            if (fila < 0) return;
+            Object idObj = jTable1.getValueAt(fila, 0);
+            if (idObj == null) return;
+            int id = Integer.parseInt(idObj.toString());
+            jTextField1.setText(String.valueOf(id));
+            Object fechaObj = jTable1.getValueAt(fila, 1);
+            jTextField2.setText(fechaObj != null ? fechaObj.toString() : "");
+            Object estadoObj = jTable1.getValueAt(fila, 2);
+            if (estadoObj != null) jComboBox3.setSelectedItem(estadoObj.toString());
+            Object clienteObj = jTable1.getValueAt(fila, 3);
+            if (clienteObj != null) {
+                String clienteIdStr = clienteObj.toString();
+                // buscar en combo cliente
+                for (int i = 0; i < jComboBox1.getItemCount(); i++) {
+                    String item = jComboBox1.getItemAt(i);
+                    if (item != null && item.startsWith(clienteIdStr + " -")) {
+                        jComboBox1.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+
+            // cargar items para mostrar producto y cantidad si existen
+            try {
+                ItemPedidoDAO itDao = new ItemPedidoDAO();
+                java.util.List<ItemPedido> items = itDao.obtenerItemsPorPedido(id);
+                if (items != null && !items.isEmpty()) {
+                    ItemPedido first = items.get(0);
+                    // buscar producto key por id
+                    for (Map.Entry<String, Integer> e : productoMap.entrySet()) {
+                        if (e.getValue().equals(first.getProductoId())) {
+                            jComboBox2.setSelectedItem(e.getKey());
+                            break;
+                        }
+                    }
+                    jTextField3.setText(String.valueOf(first.getCantidad()));
+                } else {
+                    jComboBox2.setSelectedIndex(jComboBox2.getItemCount() > 0 ? 0 : -1);
+                    jTextField3.setText("");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void editarPedido() {
+        if (jTextField1.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecciona un pedido de la tabla para editar");
+            return;
+        }
+
+        try {
+            int id = Integer.parseInt(jTextField1.getText());
+
+            // leer cliente
+            String clienteSel = (String) jComboBox1.getSelectedItem();
+            if (clienteSel == null) { JOptionPane.showMessageDialog(this, "Seleccione un cliente"); return; }
+            int clienteId = Integer.parseInt(clienteSel.split(" - ")[0].trim());
+
+            // estado
+            String estado = (String) jComboBox3.getSelectedItem();
+
+            // fecha
+            LocalDate fecha = null;
+            String fechaTxt = jTextField2.getText().trim();
+            if (!fechaTxt.isEmpty()) {
+                try {
+                    fecha = LocalDate.parse(fechaTxt);
+                } catch (DateTimeParseException dtpe) {
+                    fecha = LocalDate.now();
+                }
+            } else {
+                fecha = LocalDate.now();
+            }
+
+            // obtener usuarioId existente si es posible
+            PedidoDAO pedidoDao = new PedidoDAO();
+            Pedido existing = pedidoDao.obtenerPedidoPorId(id);
+            int usuarioId = existing != null ? existing.getUsuarioId() : 1;
+
+            // calcular total si hay producto y cantidad
+            BigDecimal total = existing != null ? existing.getTotal() : BigDecimal.ZERO;
+            String productoSel = (String) jComboBox2.getSelectedItem();
+            if (productoSel != null && !jTextField3.getText().trim().isEmpty()) {
+                Integer productoIdObj = productoMap.get(productoSel);
+                int productoId = productoIdObj != null ? productoIdObj : Integer.parseInt(productoSel.split(" - ")[0].trim());
+                int cantidad = Integer.parseInt(jTextField3.getText().trim());
+                ProductoDAO pDao = new ProductoDAO();
+                Producto prod = pDao.obtenerProductoPorId(productoId);
+                if (prod != null) {
+                    total = prod.getPrecio().multiply(new BigDecimal(cantidad));
+                }
+            }
+
+            Pedido p = new Pedido();
+            p.setId(id);
+            p.setClienteId(clienteId);
+            p.setUsuarioId(usuarioId);
+            p.setEstado(estado != null ? estado : "PENDIENTE");
+            p.setFecha(fecha);
+            p.setTotal(total);
+
+            boolean ok = pedidoDao.actualizarPedido(p);
+            if (!ok) {
+                JOptionPane.showMessageDialog(this, "Error al actualizar el pedido");
+                return;
+            }
+
+            // si se ha seleccionado producto/cantidad, reemplazar items
+            try {
+                ItemPedidoDAO itDao = new ItemPedidoDAO();
+                itDao.eliminarItemsPorPedido(id);
+                if (productoSel != null && !jTextField3.getText().trim().isEmpty()) {
+                    Integer productoIdObj = productoMap.get(productoSel);
+                    int productoId = productoIdObj != null ? productoIdObj : Integer.parseInt(productoSel.split(" - ")[0].trim());
+                    int cantidad = Integer.parseInt(jTextField3.getText().trim());
+                    ProductoDAO pDao = new ProductoDAO();
+                    Producto prod = pDao.obtenerProductoPorId(productoId);
+                    BigDecimal subtotal = prod != null ? prod.getPrecio().multiply(new BigDecimal(cantidad)) : BigDecimal.ZERO;
+                    ItemPedido it = new ItemPedido(id, productoId, cantidad, subtotal);
+                    itDao.insertarItem(it);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            JOptionPane.showMessageDialog(this, "Pedido actualizado correctamente");
+            cargarTablaPedidos();
+            limpiarCampos();
+
+        } catch (NumberFormatException nfe) {
+            JOptionPane.showMessageDialog(this, "Verifique los campos numéricos: " + nfe.getMessage());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al editar pedido: " + ex.getMessage());
+        }
+    }
+
+    private void eliminarPedido() {
+        if (jTextField1.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Selecciona un pedido de la tabla para eliminar");
+            return;
+        }
+
+        try {
+            int id = Integer.parseInt(jTextField1.getText());
+            int confirmacion = JOptionPane.showConfirmDialog(this,
+                    "¿Estás seguro de eliminar el pedido id: " + id + "?",
+                    "Confirmar Eliminación",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                ItemPedidoDAO itDao = new ItemPedidoDAO();
+                itDao.eliminarItemsPorPedido(id);
+                PedidoDAO pedidoDao = new PedidoDAO();
+                if (pedidoDao.eliminarPedido(id)) {
+                    JOptionPane.showMessageDialog(this, "Pedido eliminado exitosamente");
+                    cargarTablaPedidos();
+                    limpiarCampos();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Error al eliminar el pedido");
+                }
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Código de pedido inválido");
         }
     }
 

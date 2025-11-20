@@ -89,4 +89,25 @@ public class ItemPedidoDAO {
             return false;
         }
     }
+
+    public boolean eliminarItemsPorPedido(int pedidoId) {
+        try (Connection conn = Conexion.conectar()) {
+            if (conn == null) {
+                System.err.println("[ERROR] Conexion nula al eliminar items por pedido");
+                return false;
+            }
+            String table = detectTableName(conn);
+            String sql = "DELETE FROM " + table + " WHERE id_pedido = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, pedidoId);
+                int filas = pstmt.executeUpdate();
+                System.out.println("[OK] Items eliminados para pedido " + pedidoId + ": filas=" + filas);
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("[ERROR] Error al eliminar items por pedido: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

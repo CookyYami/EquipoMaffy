@@ -53,4 +53,68 @@ public class ProductoService {
             return false;
         }
     }
+
+    public boolean actualizarProducto(Producto producto) {
+        String sql = "UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, stock = ?, categoria = ? WHERE id = ?";
+        try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, producto.getNombre());
+            pstmt.setString(2, producto.getDescripcion());
+            pstmt.setBigDecimal(3, producto.getPrecio());
+            pstmt.setInt(4, producto.getStock());
+            pstmt.setString(5, producto.getCategoria());
+            pstmt.setInt(6, producto.getId());
+            int filas = pstmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            System.out.println("❌ Error actualizando producto: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean eliminarProducto(int id) {
+        String sql = "DELETE FROM productos WHERE id = ?";
+        try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            int filas = pstmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            System.out.println("❌ Error eliminando producto: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public Producto obtenerProductoPorId(int id) {
+        String sql = "SELECT id, nombre, descripcion, precio, stock, categoria FROM productos WHERE id = ?";
+        try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Producto p = new Producto();
+                    p.setId(rs.getInt("id"));
+                    p.setNombre(rs.getString("nombre"));
+                    p.setDescripcion(rs.getString("descripcion"));
+                    p.setPrecio(rs.getBigDecimal("precio"));
+                    p.setStock(rs.getInt("stock"));
+                    p.setCategoria(rs.getString("categoria"));
+                    return p;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ Error obteniendo producto por id: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean ajustarStock(int id, int delta) {
+        String sql = "UPDATE productos SET stock = stock + ? WHERE id = ?";
+        try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, delta);
+            pstmt.setInt(2, id);
+            int filas = pstmt.executeUpdate();
+            return filas > 0;
+        } catch (SQLException e) {
+            System.out.println("❌ Error ajustando stock: " + e.getMessage());
+            return false;
+        }
+    }
 }

@@ -118,20 +118,24 @@ public class PedidoDAO {
     }
 
     public Pedido obtenerPedidoPorId(int id) {
-        String sql = "SELECT id_pedido, fecha, estado, id_cliente, id_usuario, total FROM \"Pedido\" WHERE id_pedido = ?";
-        try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    Pedido p = new Pedido();
-                    p.setId(rs.getInt("id_pedido"));
-                    Date d = rs.getDate("fecha");
-                    if (d != null) p.setFecha(d.toLocalDate());
-                    p.setEstado(rs.getString("estado"));
-                    p.setClienteId(rs.getInt("id_cliente"));
-                    p.setUsuarioId(rs.getInt("id_usuario"));
-                    p.setTotal(rs.getBigDecimal("total"));
-                    return p;
+        try (Connection conn = Conexion.conectar()) {
+            if (conn == null) return null;
+            String table = detectTableName(conn);
+            String sql = "SELECT id_pedido, fecha, estado, id_cliente, id_usuario, total FROM " + table + " WHERE id_pedido = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, id);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        Pedido p = new Pedido();
+                        p.setId(rs.getInt("id_pedido"));
+                        Date d = rs.getDate("fecha");
+                        if (d != null) p.setFecha(d.toLocalDate());
+                        p.setEstado(rs.getString("estado"));
+                        p.setClienteId(rs.getInt("id_cliente"));
+                        p.setUsuarioId(rs.getInt("id_usuario"));
+                        p.setTotal(rs.getBigDecimal("total"));
+                        return p;
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -142,14 +146,45 @@ public class PedidoDAO {
     }
 
     public boolean eliminarPedido(int id) {
-        String sql = "DELETE FROM \"Pedido\" WHERE id_pedido = ?";
-        try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            int filas = pstmt.executeUpdate();
-            System.out.println("[OK] Pedido eliminado: " + (filas > 0));
-            return filas > 0;
+        try (Connection conn = Conexion.conectar()) {
+            if (conn == null) return false;
+            String table = detectTableName(conn);
+            String sql = "DELETE FROM " + table + " WHERE id_pedido = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, id);
+                int filas = pstmt.executeUpdate();
+                System.out.println("[OK] Pedido eliminado: " + (filas > 0));
+                return filas > 0;
+            }
         } catch (SQLException e) {
             System.err.println("[ERROR] Error al eliminar pedido: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean actualizarPedido(Pedido pedido) {
+        try (Connection conn = Conexion.conectar()) {
+            if (conn == null) {
+                System.err.println("[ERROR] Conexion nula al actualizar pedido");
+                return false;
+            }
+            String table = detectTableName(conn);
+            String sql = "UPDATE " + table + " SET fecha = ?, estado = ?, id_cliente = ?, id_usuario = ?, total = ? WHERE id_pedido = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                java.sql.Date fechaSql = java.sql.Date.valueOf(pedido.getFecha() != null ? pedido.getFecha() : java.time.LocalDate.now());
+                pstmt.setDate(1, fechaSql);
+                pstmt.setString(2, pedido.getEstado());
+                pstmt.setInt(3, pedido.getClienteId());
+                pstmt.setInt(4, pedido.getUsuarioId());
+                pstmt.setBigDecimal(5, pedido.getTotal() != null ? pedido.getTotal() : java.math.BigDecimal.ZERO);
+                pstmt.setInt(6, pedido.getId());
+                int filas = pstmt.executeUpdate();
+                System.out.println("[OK] Pedido actualizado: " + (filas > 0));
+                return filas > 0;
+            }
+        } catch (SQLException e) {
+            System.err.println("[ERROR] Error al actualizar pedido: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
