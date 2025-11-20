@@ -145,6 +145,39 @@ public class PedidoDAO {
         return null;
     }
 
+    /**
+     * Obtiene pedidos cuyo estado coincide y cuya fecha está entre desde..hasta (inclusive).
+     */
+    public List<Pedido> obtenerPedidosPorEstadoYRango(LocalDate desde, LocalDate hasta, String estado) {
+        List<Pedido> pedidos = new ArrayList<>();
+        try (Connection conn = Conexion.conectar()) {
+            if (conn == null) return pedidos;
+            String table = detectTableName(conn);
+            String sql = "SELECT id_pedido, fecha, estado, id_cliente, id_usuario, total FROM " + table + " WHERE estado = ? AND fecha BETWEEN ? AND ? ORDER BY fecha ASC";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, estado);
+                pstmt.setDate(2, Date.valueOf(desde));
+                pstmt.setDate(3, Date.valueOf(hasta));
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        Pedido p = new Pedido();
+                        p.setId(rs.getInt("id_pedido"));
+                        Date d = rs.getDate("fecha");
+                        if (d != null) p.setFecha(d.toLocalDate());
+                        p.setEstado(rs.getString("estado"));
+                        p.setClienteId(rs.getInt("id_cliente"));
+                        p.setUsuarioId(rs.getInt("id_usuario"));
+                        p.setTotal(rs.getBigDecimal("total"));
+                        pedidos.add(p);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pedidos;
+    }
+
     public boolean eliminarPedido(int id) {
         try (Connection conn = Conexion.conectar()) {
             if (conn == null) return false;

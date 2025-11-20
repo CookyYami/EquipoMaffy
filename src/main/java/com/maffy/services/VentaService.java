@@ -50,4 +50,33 @@ public class VentaService {
         }
         return ventas;
     }
+
+    /**
+     * Obtiene ventas completadas entre dos fechas (inclusive). Las fechas son LocalDate (sin hora).
+     */
+    public List<Venta> obtenerVentasPorRango(java.time.LocalDate desde, java.time.LocalDate hasta) {
+        List<Venta> ventas = new ArrayList<>();
+        // Aceptar tanto 'COMPLETADO' como 'COMPLETADA' en la columna estado
+        String sql = "SELECT * FROM ventas WHERE DATE(fecha_venta) BETWEEN ? AND ? AND UPPER(estado) LIKE 'COMPLET%' ORDER BY fecha_venta";
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setDate(1, java.sql.Date.valueOf(desde));
+            pstmt.setDate(2, java.sql.Date.valueOf(hasta));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Venta venta = new Venta();
+                    venta.setId(rs.getInt("id"));
+                    venta.setClienteId(rs.getInt("cliente_id"));
+                    venta.setTotal(rs.getBigDecimal("total"));
+                    java.sql.Timestamp ts = rs.getTimestamp("fecha_venta");
+                    if (ts != null) venta.setFechaVenta(ts.toLocalDateTime());
+                    venta.setEstado(rs.getString("estado"));
+                    ventas.add(venta);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ Error obteniendo ventas por rango: " + e.getMessage());
+        }
+        return ventas;
+    }
 }

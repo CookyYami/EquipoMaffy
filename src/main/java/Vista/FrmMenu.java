@@ -231,7 +231,9 @@ public class FrmMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_PanelContenMouseClicked
 
     private void btnReporteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReporteActionPerformed
-        
+        // Abrir el formulario de reportes
+        FrmReporte rep = new FrmReporte();
+        rep.setVisible(true);
     }//GEN-LAST:event_btnReporteActionPerformed
 
     private void btnInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInicioActionPerformed
