@@ -18,6 +18,14 @@ public class FrmMenu extends javax.swing.JFrame {
     public FrmMenu() {
         initComponents();
         setLocationRelativeTo(null);
+        // Ocultar el botón de Usuario del menú (no debe mostrarse en la barra)
+        btnUsuario.setVisible(false);
+        // Mostrar nombre de usuario bonito en la esquina del menú
+        lblNombre.setText("Yamilet Cooky");
+        lblNombre.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
+        lblNombre.setIconTextGap(8);
+        // Añadir un pequeño margen superior para que no se vea tan pegado arriba
+        lblNombre.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 0, 0, 10));
         
         PanelInicio i = new PanelInicio();
         i.setSize(940, 600);
@@ -26,6 +34,8 @@ public class FrmMenu extends javax.swing.JFrame {
         PanelConten.removeAll();
         PanelConten.add(i, BorderLayout.CENTER);
         PanelConten.revalidate();
+        lblNombre.setForeground(new java.awt.Color(0, 102, 102));
+        lblNombre.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         PanelConten.repaint();
     }
     /**
@@ -220,16 +230,11 @@ public class FrmMenu extends javax.swing.JFrame {
         
     }//GEN-LAST:event_PanelContenMouseClicked
 
-   private void btnReporteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReporteActionPerformed
-    PanelReporte reporte = new PanelReporte();
-    reporte.setSize(940, 550);
-    reporte.setLocation(0, 0);
-    
-    PanelConten.removeAll();
-    PanelConten.add(reporte, BorderLayout.CENTER);
-    PanelConten.revalidate();
-    PanelConten.repaint();
-}//GEN-LAST:event_btnReporteActionPerformed
+    private void btnReporteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReporteActionPerformed
+        // Abrir el formulario de reportes
+        FrmReporte rep = new FrmReporte();
+        rep.setVisible(true);
+    }//GEN-LAST:event_btnReporteActionPerformed
 
     private void btnInicioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInicioActionPerformed
         PanelInicio i = new PanelInicio();
@@ -277,7 +282,8 @@ public class FrmMenu extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrmMenu().setVisible(true);
+                // Mostrar primero el formulario de usuario (login) antes del menú
+                new FrmUsuario().setVisible(true);
             }
         });
     }
