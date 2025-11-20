@@ -1,0 +1,27 @@
+=== LOG INICIADO ===
+[2025-11-19 20:31:03.131] INFO - === INICIO DE PANELPEDIDO ===
+[2025-11-19 20:31:03.131] DEBUG - Testando obtenerTodosPedidos() directamente...
+[2025-11-19 20:31:03.131] DEBUG - obtenerTodosPedidos() iniciando...
+[2025-11-19 20:31:04.788] INFO - Tabla de pedidos detectada: pedido
+[2025-11-19 20:31:04.788] DEBUG - SQL: SELECT id_pedido, fecha, estado, id_cliente, id_usuario, total FROM pedido ORDER BY id_pedido DESC
+[2025-11-19 20:31:04.917] INFO - 4 pedidos cargados desde tabla pedido
+[2025-11-19 20:31:05.093] INFO - obtenerTodosPedidos() devolvió: 4 pedidos
+[2025-11-19 20:31:05.093] DEBUG -   - Pedido id=7, fecha=2025-11-19, estado=PENDIENTE
+[2025-11-19 20:31:05.093] DEBUG -   - Pedido id=6, fecha=2025-11-19, estado=PENDIENTE
+[2025-11-19 20:31:05.098] DEBUG -   - Pedido id=4, fecha=2025-11-19, estado=COMPLETADO
+[2025-11-19 20:31:05.098] DEBUG -   - Pedido id=3, fecha=2025-11-19, estado=PENDIENTE
+[2025-11-19 20:31:05.099] DEBUG - Llamando cargarCombos()...
+[2025-11-19 20:31:09.284] DEBUG - Llamando cargarTablaPedidos()...
+[2025-11-19 20:31:09.284] DEBUG - cargarTablaPedidos() iniciando...
+[2025-11-19 20:31:09.284] DEBUG - obtenerTodosPedidos() iniciando...
+[2025-11-19 20:31:11.138] INFO - Tabla de pedidos detectada: pedido
+[2025-11-19 20:31:11.138] DEBUG - SQL: SELECT id_pedido, fecha, estado, id_cliente, id_usuario, total FROM pedido ORDER BY id_pedido DESC
+[2025-11-19 20:31:11.346] INFO - 4 pedidos cargados desde tabla pedido
+[2025-11-19 20:31:11.517] DEBUG - Se obtuvieron 4 pedidos de la base de datos
+[2025-11-19 20:31:11.519] DEBUG - Añadiendo pedido: id=7, fecha=2025-11-19, estado=PENDIENTE, total=16.50
+[2025-11-19 20:31:11.519] DEBUG - Añadiendo pedido: id=6, fecha=2025-11-19, estado=PENDIENTE, total=18.00
+[2025-11-19 20:31:11.519] DEBUG - Añadiendo pedido: id=4, fecha=2025-11-19, estado=COMPLETADO, total=16.50
+[2025-11-19 20:31:11.520] DEBUG - Añadiendo pedido: id=3, fecha=2025-11-19, estado=PENDIENTE, total=71.00
+[2025-11-19 20:31:11.520] INFO - Tabla de pedidos cargada con 4 filas
+[2025-11-19 20:31:11.521] DEBUG - Asignando listeners...
+[2025-11-19 20:31:11.521] INFO - === FIN INICIALIZACION PANELPEDIDO ===

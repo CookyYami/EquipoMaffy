@@ -194,10 +194,11 @@ public class FrmMenu extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClienteActionPerformed
 
     private void btnProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProductoActionPerformed
-        PanelProducto pr = new PanelProducto();
+        // Open the inventory panel that lists products from Supabase
+        PanelInventario pr = new PanelInventario();
         pr.setSize(940, 550);
         pr.setLocation(0, 0);
-        
+
         PanelConten.removeAll();
         PanelConten.add(pr, BorderLayout.CENTER);
         PanelConten.revalidate();

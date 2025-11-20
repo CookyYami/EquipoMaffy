@@ -1,56 +1,44 @@
 package com.maffy.services;
 
-import com.maffy.database.Conexion;
+import com.maffy.Dao.ProductoDAO;
 import com.maffy.models.Producto;
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Servicio ligero que delega en ProductoDAO para acceder a la tabla real en Supabase.
+ * Esto evita duplicar SQL con nombres/columnas distintas y permite que la detección
+ * de tabla/columnas del DAO se use de forma centralizada.
+ */
 public class ProductoService {
-    
+
+    private final ProductoDAO productoDAO = new ProductoDAO();
+
     public List<Producto> obtenerTodosProductos() {
-        List<Producto> productos = new ArrayList<>();
-        String sql = "SELECT * FROM productos ORDER BY id";
-        
-        try (Connection conn = Conexion.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Producto producto = new Producto();
-                producto.setId(rs.getInt("id"));
-                producto.setNombre(rs.getString("nombre"));
-                producto.setDescripcion(rs.getString("descripcion"));
-                producto.setPrecio(rs.getBigDecimal("precio"));
-                producto.setStock(rs.getInt("stock"));
-                producto.setCategoria(rs.getString("categoria"));
-                productos.add(producto);
-            }
-            
-        } catch (SQLException e) {
-            System.out.println("❌ Error obteniendo productos: " + e.getMessage());
-        }
-        return productos;
+        return productoDAO.obtenerTodosProductos();
     }
-    
-    public boolean agregarProducto(Producto producto) {
-        String sql = "INSERT INTO productos (nombre, descripcion, precio, stock, categoria) VALUES (?, ?, ?, ?, ?)";
-        
-        try (Connection conn = Conexion.conectar();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, producto.getNombre());
-            pstmt.setString(2, producto.getDescripcion());
-            pstmt.setBigDecimal(3, producto.getPrecio());
-            pstmt.setInt(4, producto.getStock());
-            pstmt.setString(5, producto.getCategoria());
-            
-            int filasAfectadas = pstmt.executeUpdate();
-            return filasAfectadas > 0;
-            
-        } catch (SQLException e) {
-            System.out.println("❌ Error agregando producto: " + e.getMessage());
-            return false;
-        }
+
+    public boolean agregarProducto(Producto p) {
+        return productoDAO.insertarProducto(p);
+    }
+
+    public boolean actualizarProducto(Producto p) {
+        return productoDAO.actualizarProducto(p);
+    }
+
+    public boolean eliminarProducto(int id) {
+        return productoDAO.eliminarProducto(id);
+    }
+
+    public Producto obtenerProductoPorId(int id) {
+        return productoDAO.obtenerProductoPorId(id);
+    }
+
+    public boolean ajustarStock(int id, int delta) {
+        // DAO no tiene método explícito para ajustar stock, reuse actualizarProducto if needed.
+        // For now implement a quick update via DAO existing methods: fetch, modify, update.
+        Producto p = productoDAO.obtenerProductoPorId(id);
+        if (p == null) return false;
+        p.setStock(p.getStock() + delta);
+        return productoDAO.actualizarProducto(p);
     }
 }
