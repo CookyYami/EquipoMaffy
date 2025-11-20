@@ -45,14 +45,22 @@ public class ProductoDAO {
 				return productos;
 			}
 			String table = detectTableName(conn);
-			String sql = "SELECT id_producto, nombre_producto, precio, stock_actual FROM " + table;
+			String sql = "SELECT * FROM " + table;
 			try (PreparedStatement pstmt = conn.prepareStatement(sql); ResultSet rs = pstmt.executeQuery()) {
 				while (rs.next()) {
 					Producto producto = new Producto();
-					producto.setId(rs.getInt("id_producto"));
-					producto.setNombre(rs.getString("nombre_producto"));
-					producto.setPrecio(rs.getBigDecimal("precio"));
-					producto.setStock(rs.getInt("stock_actual"));
+					// map common column names if present
+					try { producto.setId(rs.getInt("id_producto")); } catch (SQLException ex) { }
+					try { producto.setNombre(rs.getString("nombre_producto")); } catch (SQLException ex) { }
+					// descripcion puede llamarse 'descripcion' o 'descripcion_producto'
+					String desc = null;
+					try { desc = rs.getString("descripcion"); } catch (SQLException ex) { }
+					if (desc == null) {
+						try { desc = rs.getString("descripcion_producto"); } catch (SQLException ex) { }
+					}
+					producto.setDescripcion(desc);
+					try { producto.setPrecio(rs.getBigDecimal("precio")); } catch (SQLException ex) { }
+					try { producto.setStock(rs.getInt("stock_actual")); } catch (SQLException ex) { }
 					productos.add(producto);
 				}
 				System.out.println("[OK] " + productos.size() + " productos cargados desde tabla: " + table);
@@ -65,13 +73,17 @@ public class ProductoDAO {
 	}
 
 	public boolean insertarProducto(Producto producto) {
-		String sql = "INSERT INTO \"Producto\" (nombre_producto, precio, stock_actual) VALUES (?, ?, ?)";
-		try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setString(1, producto.getNombre());
-			pstmt.setBigDecimal(2, producto.getPrecio());
-			pstmt.setInt(3, producto.getStock());
-			int filas = pstmt.executeUpdate();
-			return filas > 0;
+		try (Connection conn = Conexion.conectar()) {
+			if (conn == null) return false;
+			String table = detectTableName(conn);
+			String sql = "INSERT INTO " + table + " (nombre_producto, precio, stock_actual) VALUES (?, ?, ?)";
+			try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+				pstmt.setString(1, producto.getNombre());
+				pstmt.setBigDecimal(2, producto.getPrecio());
+				pstmt.setInt(3, producto.getStock());
+				int filas = pstmt.executeUpdate();
+				return filas > 0;
+			}
 		} catch (SQLException e) {
 			System.err.println("[ERROR] Error al insertar producto: " + e.getMessage());
 			e.printStackTrace();
@@ -80,14 +92,18 @@ public class ProductoDAO {
 	}
 
 	public boolean actualizarProducto(Producto producto) {
-		String sql = "UPDATE \"Producto\" SET nombre_producto = ?, precio = ?, stock_actual = ? WHERE id_producto = ?";
-		try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setString(1, producto.getNombre());
-			pstmt.setBigDecimal(2, producto.getPrecio());
-			pstmt.setInt(3, producto.getStock());
-			pstmt.setInt(4, producto.getId());
-			int filas = pstmt.executeUpdate();
-			return filas > 0;
+		try (Connection conn = Conexion.conectar()) {
+			if (conn == null) return false;
+			String table = detectTableName(conn);
+			String sql = "UPDATE " + table + " SET nombre_producto = ?, precio = ?, stock_actual = ? WHERE id_producto = ?";
+			try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+				pstmt.setString(1, producto.getNombre());
+				pstmt.setBigDecimal(2, producto.getPrecio());
+				pstmt.setInt(3, producto.getStock());
+				pstmt.setInt(4, producto.getId());
+				int filas = pstmt.executeUpdate();
+				return filas > 0;
+			}
 		} catch (SQLException e) {
 			System.err.println("[ERROR] Error al actualizar producto: " + e.getMessage());
 			e.printStackTrace();
@@ -96,11 +112,15 @@ public class ProductoDAO {
 	}
 
 	public boolean eliminarProducto(int id) {
-		String sql = "DELETE FROM \"Producto\" WHERE id_producto = ?";
-		try (Connection conn = Conexion.conectar(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-			pstmt.setInt(1, id);
-			int filas = pstmt.executeUpdate();
-			return filas > 0;
+		try (Connection conn = Conexion.conectar()) {
+			if (conn == null) return false;
+			String table = detectTableName(conn);
+			String sql = "DELETE FROM " + table + " WHERE id_producto = ?";
+			try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+				pstmt.setInt(1, id);
+				int filas = pstmt.executeUpdate();
+				return filas > 0;
+			}
 		} catch (SQLException e) {
 			System.err.println("[ERROR] Error al eliminar producto: " + e.getMessage());
 			e.printStackTrace();
@@ -115,20 +135,26 @@ public class ProductoDAO {
 				return null;
 			}
 			String table = detectTableName(conn);
-			String sql = "SELECT id_producto, nombre_producto, precio, stock_actual FROM " + table + " WHERE id_producto = ?";
-			try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-				pstmt.setInt(1, id);
-				try (ResultSet rs = pstmt.executeQuery()) {
-					if (rs.next()) {
-						Producto producto = new Producto();
-						producto.setId(rs.getInt("id_producto"));
-						producto.setNombre(rs.getString("nombre_producto"));
-						producto.setPrecio(rs.getBigDecimal("precio"));
-						producto.setStock(rs.getInt("stock_actual"));
-						return producto;
+				String sql = "SELECT * FROM " + table + " WHERE id_producto = ?";
+				try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+					pstmt.setInt(1, id);
+					try (ResultSet rs = pstmt.executeQuery()) {
+						if (rs.next()) {
+							Producto producto = new Producto();
+							try { producto.setId(rs.getInt("id_producto")); } catch (SQLException ex) { }
+							try { producto.setNombre(rs.getString("nombre_producto")); } catch (SQLException ex) { }
+							String desc = null;
+							try { desc = rs.getString("descripcion"); } catch (SQLException ex) { }
+							if (desc == null) {
+								try { desc = rs.getString("descripcion_producto"); } catch (SQLException ex) { }
+							}
+							producto.setDescripcion(desc);
+							try { producto.setPrecio(rs.getBigDecimal("precio")); } catch (SQLException ex) { }
+							try { producto.setStock(rs.getInt("stock_actual")); } catch (SQLException ex) { }
+							return producto;
+						}
 					}
 				}
-			}
 		} catch (SQLException e) {
 			System.err.println("[ERROR] Error al obtener producto por ID: " + e.getMessage());
 			e.printStackTrace();

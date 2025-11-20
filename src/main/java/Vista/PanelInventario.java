@@ -27,16 +27,28 @@ public class PanelInventario extends javax.swing.JPanel {
         };
         modeloTabla.addColumn("ID");
         modeloTabla.addColumn("NOMBRE");
-        modeloTabla.addColumn("DESCRIPCION");
         modeloTabla.addColumn("PRECIO");
         modeloTabla.addColumn("STOCK");
-        modeloTabla.addColumn("CATEGORIA");
         tablaProductos.setModel(modeloTabla);
     }
 
     private void configurarEventos() {
         tablaProductos.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) cargarProductoSeleccionado();
+            if (e.getValueIsAdjusting()) return;
+            int fila = tablaProductos.getSelectedRow();
+            if (fila >= 0) {
+                cargarProductoSeleccionado();
+                btnEditar.setEnabled(true);
+                btnEliminar.setEnabled(true);
+            } else {
+                // no selection: clear fields and disable edit/delete
+                txtId.setText("");
+                txtNombre.setText("");
+                txtPrecio.setText("");
+                txtStock.setText("");
+                btnEditar.setEnabled(false);
+                btnEliminar.setEnabled(false);
+            }
         });
     }
 
@@ -44,19 +56,19 @@ public class PanelInventario extends javax.swing.JPanel {
         modeloTabla.setRowCount(0);
         List<Producto> productos = productoService.obtenerTodosProductos();
         for (Producto p : productos) {
-            modeloTabla.addRow(new Object[]{p.getId(), p.getNombre(), p.getDescripcion(), p.getPrecio(), p.getStock(), p.getCategoria()});
+            modeloTabla.addRow(new Object[]{p.getId(), p.getNombre(), p.getPrecio(), p.getStock()});
         }
     }
 
     private void limpiarCampos() {
         txtId.setText("");
         txtNombre.setText("");
-        txtDescripcion.setText("");
         txtPrecio.setText("");
         txtStock.setText("");
-        txtCategoria.setText("");
         txtBuscar.setText("");
         tablaProductos.clearSelection();
+        btnEditar.setEnabled(false);
+        btnEliminar.setEnabled(false);
     }
 
     private void cargarProductoSeleccionado() {
@@ -64,23 +76,23 @@ public class PanelInventario extends javax.swing.JPanel {
         if (fila < 0) return;
         txtId.setText(String.valueOf(modeloTabla.getValueAt(fila, 0)));
         txtNombre.setText(String.valueOf(modeloTabla.getValueAt(fila, 1)));
-        txtDescripcion.setText(String.valueOf(modeloTabla.getValueAt(fila, 2)));
-        txtPrecio.setText(String.valueOf(modeloTabla.getValueAt(fila, 3)));
-        txtStock.setText(String.valueOf(modeloTabla.getValueAt(fila, 4)));
-        txtCategoria.setText(String.valueOf(modeloTabla.getValueAt(fila, 5)));
+        txtPrecio.setText(String.valueOf(modeloTabla.getValueAt(fila, 2)));
+        txtStock.setText(String.valueOf(modeloTabla.getValueAt(fila, 3)));
+        // Categoria no está presente en la tabla de Supabase; campo removido en UI
     }
 
     private void guardarProducto() {
         try {
             String nombre = txtNombre.getText().trim();
-            String descripcion = txtDescripcion.getText().trim();
             BigDecimal precio = new BigDecimal(txtPrecio.getText().trim());
             int stock = Integer.parseInt(txtStock.getText().trim());
-            String categoria = txtCategoria.getText().trim();
 
             if (nombre.isEmpty()) { JOptionPane.showMessageDialog(this, "Nombre requerido"); return; }
 
-            Producto p = new Producto(nombre, descripcion, precio, stock, categoria);
+            Producto p = new Producto();
+            p.setNombre(nombre);
+            p.setPrecio(precio);
+            p.setStock(stock);
             if (productoService.agregarProducto(p)) {
                 JOptionPane.showMessageDialog(this, "Producto creado");
                 cargarDatos();
@@ -101,18 +113,15 @@ public class PanelInventario extends javax.swing.JPanel {
         try {
             int id = Integer.parseInt(txtId.getText());
             String nombre = txtNombre.getText().trim();
-            String descripcion = txtDescripcion.getText().trim();
             BigDecimal precio = new BigDecimal(txtPrecio.getText().trim());
             int stock = Integer.parseInt(txtStock.getText().trim());
-            String categoria = txtCategoria.getText().trim();
 
             Producto p = new Producto();
             p.setId(id);
             p.setNombre(nombre);
-            p.setDescripcion(descripcion);
             p.setPrecio(precio);
             p.setStock(stock);
-            p.setCategoria(categoria);
+            
 
             if (productoService.actualizarProducto(p)) {
                 JOptionPane.showMessageDialog(this, "Producto actualizado");
@@ -172,10 +181,8 @@ public class PanelInventario extends javax.swing.JPanel {
         List<Producto> productos = productoService.obtenerTodosProductos();
         for (Producto p : productos) {
             if (String.valueOf(p.getId()).contains(texto)
-                    || (p.getNombre() != null && p.getNombre().toLowerCase().contains(texto))
-                    || (p.getDescripcion() != null && p.getDescripcion().toLowerCase().contains(texto))
-                    || (p.getCategoria() != null && p.getCategoria().toLowerCase().contains(texto))) {
-                modeloTabla.addRow(new Object[]{p.getId(), p.getNombre(), p.getDescripcion(), p.getPrecio(), p.getStock(), p.getCategoria()});
+                    || (p.getNombre() != null && p.getNombre().toLowerCase().contains(texto))) {
+                modeloTabla.addRow(new Object[]{p.getId(), p.getNombre(), p.getPrecio(), p.getStock()});
             }
         }
     }
@@ -187,13 +194,10 @@ public class PanelInventario extends javax.swing.JPanel {
         txtId = new javax.swing.JTextField();
         txtNombre = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        txtDescripcion = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
         txtPrecio = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         txtStock = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        txtCategoria = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         tablaProductos = new javax.swing.JTable();
         btnGuardar = new javax.swing.JButton();
@@ -205,68 +209,87 @@ public class PanelInventario extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         txtBuscar = new javax.swing.JTextField();
 
+        setPreferredSize(new java.awt.Dimension(940, 550));
+        setBackground(new java.awt.Color(255, 254, 194));
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18));
         jLabel1.setText("INVENTARIO");
         add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 10, -1, -1));
 
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14));
         jLabel2.setText("ID:");
         add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 50, -1, -1));
-        add(txtId, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 50, 120, -1));
+        add(txtId, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 50, 140, -1));
 
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14));
         jLabel3.setText("Nombre:");
         add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 90, -1, -1));
-        add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 90, 220, -1));
+        add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 90, 260, -1));
 
-        jLabel4.setText("Descripcion:");
-        add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 130, -1, -1));
-        add(txtDescripcion, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 130, 300, -1));
-
+        // Precio label + field (moved up because Descripcion was removed)
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14));
         jLabel5.setText("Precio:");
-        add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 170, -1, -1));
-        add(txtPrecio, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 170, 120, -1));
+        add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 130, -1, -1));
+        add(txtPrecio, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 130, 120, -1));
 
+        // Stock label + field (positioned to the right of Precio)
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14));
         jLabel6.setText("Stock:");
-        add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 170, -1, -1));
-        add(txtStock, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 170, 80, -1));
+        add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 130, -1, -1));
+        add(txtStock, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 130, 80, -1));
 
-        jLabel8 = new javax.swing.JLabel();
-        jLabel8.setText("Categoria:");
-        add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 50, -1, -1));
-        add(txtCategoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 50, 140, -1));
+        // (Precio and Stock were added above; remove any duplicate code here)
 
         tablaProductos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
-            new String [] {"ID","NOMBRE","DESCRIPCION","PRECIO","STOCK","CATEGORIA"}
+            new String [] {"ID","NOMBRE","PRECIO","STOCK"}
         ));
+        tablaProductos.setRowHeight(24);
+        tablaProductos.getTableHeader().setFont(new java.awt.Font("Segoe UI", 1, 12));
         jScrollPane1.setViewportView(tablaProductos);
-        add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 220, 820, 320));
+        // moved table down to create space between buttons and table
+        add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 260, 820, 280));
 
+        btnGuardar.setBackground(new java.awt.Color(102, 204, 255));
+        btnGuardar.setFont(new java.awt.Font("Segoe UI", 1, 14));
         btnGuardar.setText("Guardar");
         btnGuardar.addActionListener(evt -> guardarProducto());
         add(btnGuardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 200, 100, -1));
 
+        btnLimpiar.setBackground(new java.awt.Color(255, 255, 153));
+        btnLimpiar.setFont(new java.awt.Font("Segoe UI", 1, 14));
         btnLimpiar.setText("Limpiar");
         btnLimpiar.addActionListener(evt -> limpiarCampos());
         add(btnLimpiar, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 200, 100, -1));
 
+        btnEditar.setBackground(new java.awt.Color(153, 255, 255));
+        btnEditar.setFont(new java.awt.Font("Segoe UI", 1, 14));
         btnEditar.setText("Editar");
+        btnEditar.setEnabled(false);
         btnEditar.addActionListener(evt -> editarProducto());
         add(btnEditar, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 200, 100, -1));
 
+        btnEliminar.setBackground(new java.awt.Color(255, 153, 153));
+        btnEliminar.setFont(new java.awt.Font("Segoe UI", 1, 14));
         btnEliminar.setText("Eliminar");
+        btnEliminar.setEnabled(false);
         btnEliminar.addActionListener(evt -> eliminarProducto());
         add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 200, 100, -1));
 
+        btnAumentar.setBackground(new java.awt.Color(204, 255, 204));
+        btnAumentar.setFont(new java.awt.Font("Segoe UI", 1, 14));
         btnAumentar.setText("Aumentar");
         btnAumentar.addActionListener(evt -> ajustarStock(true));
         add(btnAumentar, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 200, 100, -1));
 
+        btnDisminuir.setBackground(new java.awt.Color(255, 204, 204));
+        btnDisminuir.setFont(new java.awt.Font("Segoe UI", 1, 14));
         btnDisminuir.setText("Disminuir");
         btnDisminuir.addActionListener(evt -> ajustarStock(false));
         add(btnDisminuir, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 200, 100, -1));
 
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 14));
         jLabel7.setText("Buscar:");
         add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(680, 50, -1, -1));
         txtBuscar.addActionListener(evt -> buscar());
@@ -283,16 +306,12 @@ public class PanelInventario extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tablaProductos;
     private javax.swing.JTextField txtBuscar;
-    private javax.swing.JTextField txtCategoria;
-    private javax.swing.JTextField txtDescripcion;
     private javax.swing.JTextField txtId;
     private javax.swing.JTextField txtNombre;
     private javax.swing.JTextField txtPrecio;
