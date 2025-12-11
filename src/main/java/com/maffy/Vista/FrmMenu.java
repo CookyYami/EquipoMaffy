@@ -20,7 +20,7 @@ public class FrmMenu extends javax.swing.JFrame {
         setLocationRelativeTo(null);
         // Ocultar el botón de Usuario del menú (no debe mostrarse en la barra)
         btnUsuario.setVisible(false);
-        // Mostrar nombre de usuario bonito en la esquina del menú
+
         lblNombre.setText("Yamilet Cooky");
         lblNombre.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 16));
         lblNombre.setIconTextGap(8);
